@@ -1425,7 +1425,8 @@ ammo_give( weapon )
 	if( give_ammo )
 	{
 		self playsound( "cha_ching" ); 
-		self GivemaxAmmo( weapon ); 
+		self GivemaxAmmo( weapon );
+		self SetWeaponAmmoClip( weapon, WeaponClipSize( weapon ) ); 
 		return true;
 	}
 

@@ -610,7 +610,7 @@ start_carpenter( origin )
 
 	for(i = 0; i < players.size; i++)
 	{
-		players[i].score += 299 * level.zombie_vars["zombie_point_scalar"];
+		players[i].score += 200 * level.zombie_vars["zombie_point_scalar"];
 		players[i].score_total += 200 * level.zombie_vars["zombie_point_scalar"];
 		players[i] maps\_zombiemode_score::set_player_score_hud(); 
 	}

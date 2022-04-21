@@ -1,6 +1,8 @@
 name,file,platform,sequence,vol_min,vol_max,dist_min,dist_max,limit_count,limit_type,entity_limit_count,entity_limit_type,bus,volume_min_falloff_curve,volumefalloffcurve,reverb_send,dist_reverb_max,reverb_min_falloff_curve,reverb_falloff_curve,pitch_min,pitch_max,randomize_type,spatialized,type,probability,loop,masterslave,loadspec,subtitle,compression,secondaryaliasname,chainaliasname,startdelay,speakermap,lfe percentage,center percentage,envelop_min,envelop_max,envelop percentage,occlusion_level,occlusion_wet_dry,real_delay,distance_lpf,move_type,move_time,min_priority,max_priority,min_priority_threshold,max_priority_threshold,,isbig
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 # Announcer,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 carp_vox,voiceovers\zombie\ANN\ANN_carpenter.wav,,,1,1,50,2500,1,reject,1,reject,voice,,curve2,,,,,1,1,,2d,,,,master,,,,,,1000,wpn_all,,,,,,,,,,,,100,100,0.25,1,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 # Power Ups,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 carp_loop,SFX\Levels\zombie\powerups\carp\carp_loop.wav,,,0.75,0.75,,,4,reject,,,full_vol,,,1,,,,1,1,,2d,,,looping,0.5,,,,,,500,wpn_all,,,,,,0.25,,,,,,100,100,0.25,1,,
 carp_end,SFX\Levels\zombie\powerups\carp\carp_end.wav,,,1,1,,,4,reject,,,full_vol,,,1,,,,1,1,,2d,,,,,,,,points_loop_off,,,wpn_all,,,,,,0.25,,,,,,100,100,0.25,1,,

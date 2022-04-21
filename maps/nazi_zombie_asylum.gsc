@@ -631,7 +631,7 @@ include_weapons()
 	//include_weapon( "tesla_gun" );
 	
 	// Pistols
-	//include_weapon( "colt" );
+	include_weapon( "colt" );
 	//include_weapon( "colt_dirty_harry" );
 	include_weapon( "walther_prototype" );
 	include_weapon( "sw_357" );
@@ -645,7 +645,7 @@ include_weapons()
 	include_weapon( "stg44" );
 	include_weapon( "thompson" );
 	include_weapon( "mp40" );
-	include_weapon("ppsh");
+	include_weapon( "ppsh" );
 
 	// Bolt Action
 	include_weapon( "kar98k", false );
@@ -693,6 +693,7 @@ include_weapons()
 	//include_weapon("zombie_bowie_flourish");
  	// include_weapon( "zombie_cymbal_monkey", ::default_cymbal_monkey_weighting_func );
 
+	level.limited_weapons["colt"] = 0;
 	level.limited_weapons["springfield"] = 0;
 	level.limited_weapons["kar98k"] = 0;
 	level.limited_weapons["m1garand"] = 0;

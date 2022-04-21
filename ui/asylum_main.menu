@@ -375,7 +375,7 @@
 		#include "ui/info_box.inc"
 		CHOICE_MENU_TITLE( "@MENU_MAIN_MENU" )
 #else
-		CHOICE_MENU_TITLE( "Verrückt - Reloaded" )
+		CHOICE_MENU_TITLE( "VerrÃ¼ckt: Reloaded" )
 #endif // #ifdef CONSOLE
 
 		itemDef

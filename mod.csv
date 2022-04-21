@@ -25,5 +25,5 @@ sound,sfx,weapon,uber,uber_m_right
 sound,sfx,weapon,uber,uber_shot_m
 sound,sfx,weapon,uber,uber_shot_st
 material,logo_cod2
-menufile,ui/main.menu
-menufile,ui/options_game_pc.menu
+menufile,ui/asylum_main.menu
+menufile,ui/asylum_options_game_pc.menu

@@ -111,7 +111,7 @@ zombie_spawn_init()
 	self.head_gibbed = false;
 	
 	// might need this so co-op zombie players cant block zombie pathing
-	self PushPlayer( true ); 
+	self PushPlayer( false ); //was true (turned off to match BO1)
 //	self.meleeRange = 128; 
 //	self.meleeRangeSq = anim.meleeRange * anim.meleeRange; 
 	
@@ -188,7 +188,7 @@ zombie_spawn_init_dog()
 	self.gibbed = false; 
 	self.head_gibbed = false;
 	
-	self PushPlayer( true ); 
+	self PushPlayer( false ); //was true (turned off to match BO1)
 
 //	self.disableArrivals = true; 
 //	self.disableExits = true; 
@@ -1906,7 +1906,7 @@ zombie_setup_attack_properties()
 	self.ignoreall = false; 
 
 	// push the player out of the way so they use traversals in the house.
-	self PushPlayer( true ); 
+	self PushPlayer( false ); //was true (turned off to match BO1)
 
 	self.pathEnemyFightDist = 64;
 	self.meleeAttackDist = 64;
@@ -1928,7 +1928,7 @@ zombie_setup_attack_properties_dog()
 	self.ignoreall = false; 
 
 	// push the player out of the way so they use traversals in the house.
-	self PushPlayer( true ); 
+	self PushPlayer( false ); //was true (turned off to match BO1)
 
 	self.pathEnemyFightDist = 64;
 	self.meleeAttackDist = 64;

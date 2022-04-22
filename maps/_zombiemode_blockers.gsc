@@ -1,6 +1,7 @@
 #include maps\_utility; 
 #include common_scripts\utility; 
 #include maps\_zombiemode_utility; 
+#using_animtree( "generic_human" );
 
 init()
 {
@@ -64,49 +65,38 @@ door_init()
 	{
 		flag_init( self.script_flag ); 
 	}	
-	door = targets[0]; 
-	if( targets.size == 1 )
-	{
-		door = targets[0]; 
-		if( IsDefined( door.script_angles ) )
-		{
-			self.type = "rotate"; 
-		}
-		else if( IsDefined( door.script_vector ) )
-		{
-			self.type = "move";
-		}
 
-		self.door = door; 
-	}
-	else
+	//MM Consolidate type code
+	for(i=0;i<targets.size;i++)
 	{
-		if( IsDefined( self.script_noteworthy ) )
+		targets[i] disconnectpaths();
+		if ( IsDefined(targets[i].script_noteworthy) && targets[i].script_noteworthy == "clip" )
 		{
-			if( self.script_noteworthy == "bust_apart" )
+			self.clip = targets[i];
+			self.script_string = "clip";
+		}
+		else if( !IsDefined( targets[i].script_string ) )
+		{
+			if( IsDefined( targets[i].script_angles ) )
 			{
-				self.pieces = targets; 
+				targets[i].script_string = "rotate";
+			}
+			else if( IsDefined( targets[i].script_vector ) )
+			{
+				targets[i].script_string = "move";
 			}
 		}
-		
-		//chris_p
-		if(isDefined(door.script_string) && door.script_string == "slide_apart")
+		else
 		{
-			self.type = "slide_apart";
-			
-			for(i=0;i<targets.size;i++)
+			if ( targets[i].script_string == "anim" )
 			{
-				targets[i] disconnectpaths();
+				AssertEx( IsDefined( targets[i].script_animname ), "Blocker_init: You must specify a script_animname for "+targets[i].targetname ); 
+				AssertEx( IsDefined( level.scr_anim[ targets[i].script_animname ] ), "Blocker_init: You must define a level.scr_anim for script_anim -> "+targets[i].script_animname ); 
+				AssertEx( IsDefined( level.blocker_anim_func ), "Blocker_init: You must define a level.blocker_anim_func" ); 
 			}
-			
-			
-			self.doors = targets;
-			self.door = targets[0];						
-			
 		}
-		
-				
 	}
+	self.doors = targets;
 
 	//AssertEx( IsDefined( self.type ), "You must determine how this door opens. Specify script_angles, script_vector, or a script_noteworthy... Door at: " + self.origin ); 
 
@@ -117,153 +107,174 @@ door_init()
 	}
 
 	self set_hint_string( self, "default_buy_door_" + cost );
-	self SetCursorHint( "HINT_NOICON" ); 
+	self SetCursorHint( "HINT_NOICON" ); 	
 	self UseTriggerRequireLookAt();
-
 	self thread door_think(); 
+
+	// MM - Added support for electric doors.  Don't have to add them to level scripts
+	if ( IsDefined( self.script_noteworthy ) && self.script_noteworthy == "electric_door" )
+	{
+		self set_door_unusable();
+		if( isDefined( level.door_dialog_function ) )
+		{
+			self thread [[ level.door_dialog_function ]]();
+		}
+	}
 }
+
 
 door_think()
 {
-
 	// maybe the door the should just bust open instead of slowly opening.
 	// maybe just destroy the door, could be two players from opposite sides..
 	// breaking into chunks seems best.
 	// or I cuold just give it no collision
 	while( 1 )
 	{
-		self waittill( "trigger", who ); 
-
 		if(isDefined(self.script_noteworthy) && self.script_noteworthy == "electric_door")
 		{
-			return;
+			flag_wait( "electricity_on" );
 		}
-
-		if( !who UseButtonPressed() )
+		else
 		{
-			continue;
-		}
-
-		if( who in_revive_trigger() )
-		{
-			continue;
-		}
-
-		if( is_player_valid( who ) )
-		{
-			if( who.score >= self.zombie_cost )
+			self waittill( "trigger", who ); 
+			if( !who UseButtonPressed() )
 			{
-				// set the score
-				who maps\_zombiemode_score::minus_to_player_score( self.zombie_cost ); 
-				
-				self.door connectpaths(); 
-	
-				play_sound_at_pos( "purchase", self.door.origin );
-	
-				if( self.type == "rotate" )
-				{
-					self.door NotSolid(); 
-					
-					time = 1; 
-					if( IsDefined( self.door.script_transition_time ) )
-					{
-						time = self.door.script_transition_time; 
-					}
-					
-					play_sound_at_pos( "door_rotate_open", self.door.origin );
-	
-					self.door RotateTo( self.door.script_angles, time, 0, 0 ); 
-					self.door thread door_solid_thread(); 
-				}
-				else if( self.type == "move" )
-				{
-					self.door NotSolid(); 
-					
-					time = 1; 
-					if( IsDefined( self.door.script_transition_time ) )
-					{
-						time = self.door.script_transition_time; 
-					}
-					
-					play_sound_at_pos( "door_slide_open", self.door.origin );
-	
-					self.door MoveTo( self.door.origin + self.door.script_vector, time, time * 0.25, time * 0.25 ); 
-					self.door thread door_solid_thread();
-				}
-				
-				else if( self.type == "slide_apart")
-				{
-					
-					for(i=0;i<self.doors.size;i++)
-					{
-						self.doors[i] NotSolid(); 
-					
-						time = 1; 
-						if( IsDefined( self.doors[i].script_transition_time ) )
-						{
-							time = self.doors[i].script_transition_time; 
-						}
-					
-						play_sound_at_pos( "door_slide_open", self.doors[i].origin );
-						
-						if(isDefined(self.clip) )
-						{
-							if( self.clip == self.doors[i])
-							{
-								self.doors[i] connectpaths();
-							}
-						}
-						else
-						{
-							self.doors[i] connectpaths();
-						}
-						
-						if(isDefined(self.doors[i].script_vector))
-						{
-							self.doors[i] MoveTo( self.doors[i].origin + self.doors[i].script_vector, time, time * 0.25, time * 0.25 ); 
-							self.doors[i] thread door_solid_thread();
-						}
-						wait(randomfloat(.15));						
-					}
-					
-				}
-	
-				//Chris_P - just in case no spawners are targetted
-				if(isDefined(self.door.target))
-				{
-					// door needs to target new spawners which will become part
-					// of the level enemy array
-					self.door add_new_zombie_spawners(); 
-				}
-				
-				//CHRIS_P
-				//set any flags
-				if( IsDefined( self.script_flag ) )
-				{
-					flag_set( self.script_flag );
-				}				
-				
-				// get all trigs, we might want a trigger on both sides
-				// of some junk sometimes
-				all_trigs = getentarray( self.target, "target" ); 
-				for( i = 0; i < all_trigs.size; i++ )
-				{
-					all_trigs[i] delete(); 
-				}
-	
-				break; 	
+				continue;
 			}
-			else // Not enough money
+
+			if( who in_revive_trigger() )
 			{
-				play_sound_at_pos( "no_purchase", self.door.origin );
+				continue;
+			}
+
+			if( is_player_valid( who ) )
+			{
+				if( who.score >= self.zombie_cost )
+				{
+					// set the score
+					who maps\_zombiemode_score::minus_to_player_score( self.zombie_cost ); 
+					if( isDefined( level.achievement_notify_func ) )
+					{
+						level [[ level.achievement_notify_func ]]( "DLC3_ZOMBIE_ALL_DOORS" );
+					}
+					bbPrint( "zombie_uses: playername %s playerscore %d round %d cost %d name %s x %f y %f z %f type door", who.playername, who.score, level.round_number, self.zombie_cost, self.target, self.origin );
+				}
+				else // Not enough money
+				{
+					play_sound_at_pos( "no_purchase", self.doors[0].origin );
+					// who thread maps\_zombiemode_perks::play_no_money_perk_dialog();
+					continue;
+				}
 			}
 		}
+
+		// Door has been activated, make it do its thing
+		for(i=0;i<self.doors.size;i++)
+		{
+			self.doors[i] NotSolid(); 
+			self.doors[i] connectpaths();
+			
+			// Prevent multiple triggers from making doors move more than once
+			if ( IsDefined(self.doors[i].door_moving) )
+			{
+				continue;
+			}
+			self.doors[i].door_moving = 1;
+			
+			if ( ( IsDefined( self.doors[i].script_noteworthy )	&& self.doors[i].script_noteworthy == "clip" ) ||
+				 ( IsDefined( self.doors[i].script_string )		&& self.doors[i].script_string == "clip" ) )
+			{
+				continue;
+			}
+
+			if ( IsDefined( self.doors[i].script_sound ) )
+			{
+				play_sound_at_pos( self.doors[i].script_sound, self.doors[i].origin );
+			}
+			else
+			{
+				play_sound_at_pos( "door_slide_open", self.doors[i].origin );
+			}
+
+			time = 1; 
+			if( IsDefined( self.doors[i].script_transition_time ) )
+			{
+				time = self.doors[i].script_transition_time; 
+			}
+
+			// MM - each door can now have a different opening style instead of
+			//	needing to be all the same
+			switch( self.doors[i].script_string )
+			{
+			case "rotate":
+				if(isDefined(self.doors[i].script_angles))
+				{
+					self.doors[i] RotateTo( self.doors[i].script_angles, time, 0, 0 ); 
+					self.doors[i] thread door_solid_thread(); 
+				}
+				wait(randomfloat(.15));						
+				break;
+			case "move":
+			case "slide_apart":
+				if(isDefined(self.doors[i].script_vector))
+				{
+					self.doors[i] MoveTo( self.doors[i].origin + self.doors[i].script_vector, time, time * 0.25, time * 0.25 ); 
+					self.doors[i] thread door_solid_thread();
+				}
+				wait(randomfloat(.15));						
+				break;
+
+			case "anim":
+//						self.doors[i] animscripted( "door_anim", self.doors[i].origin, self.doors[i].angles, level.scr_anim[ self.doors[i].script_animname ] );
+				self.doors[i] [[ level.blocker_anim_func ]]( self.doors[i].script_animname ); 
+				self.doors[i] thread door_solid_thread_anim();
+				wait(randomfloat(.15));						
+				break;
+			}
+
+			// Just play purchase sound on the first door
+			if( i == 0 )
+			{
+				play_sound_at_pos( "purchase", self.doors[i].origin );
+			}
+				
+			//Chris_P - just in case spawners are targeted
+			if( isDefined( self.doors[i].target ) )
+			{
+				// door needs to target new spawners which will become part
+				// of the level enemy array
+				self.doors[i] add_new_zombie_spawners();
+			}
+		}
+	
+		//CHRIS_P
+		//set any flags
+		if( IsDefined( self.script_flag ) )
+		{
+			flag_set( self.script_flag );
+		}				
+		
+		// get all trigs, we might want a trigger on both sides
+		// of some junk sometimes
+		all_trigs = getentarray( self.target, "target" ); 
+		for( i = 0; i < all_trigs.size; i++ )
+		{
+			all_trigs[i] trigger_off(); 
+		}
+		break;
 	}
 }
 
+
+//
+//	Waits until it is finished moving and then returns to solid once no player is touching it
+//		(So they don't get stuck).  The door is made notSolid initially, otherwise, a player
+//		could block its movement or cause a player to become stuck.
 door_solid_thread()
 {
-	self waittill( "rotatedone" ); 
+	// MM - added support for movedone.
+	self waittill_either( "rotatedone", "movedone" ); 
 
 	while( 1 )
 	{
@@ -288,6 +299,48 @@ door_solid_thread()
 	}
 }
 
+
+//
+//	Called on doors using anims.  It needs a different waittill, 
+//		and expects the animname message to be the same as the one passed into scripted anim
+door_solid_thread_anim( )
+{
+	// MM - added support for movedone.
+	self waittillmatch( "door_anim", "end" ); 
+
+	while( 1 )
+	{
+		players = get_players(); 
+		player_touching = false; 
+		for( i = 0; i < players.size; i++ )
+		{
+			if( players[i] IsTouching( self ) )
+			{
+				player_touching = true; 
+				break; 
+			}
+		}
+
+		if( !player_touching )
+		{
+			self Solid(); 
+			return; 
+		}
+
+		wait( 1 ); 
+	}
+}
+
+
+//
+//  Electric doors are unuseable
+set_door_unusable()
+{
+	self sethintstring(&"ZOMBIE_FLAMES_UNAVAILABLE");
+	self UseTriggerRequireLookAt();
+}
+
+
 //
 // DEBRIS ----------------------------------------------------------------------------------- //
 //
@@ -308,9 +361,7 @@ debris_init()
 		flag_init( self.script_flag ); 
 	}
 
-
 	self UseTriggerRequireLookAt();
-
 	self thread debris_think(); 
 }
 
@@ -352,7 +403,12 @@ debris_think()
 			{
 				// set the score
 				who maps\_zombiemode_score::minus_to_player_score( self.zombie_cost ); 
-	
+				if( isDefined( level.achievement_notify_func ) )
+				{
+					level [[ level.achievement_notify_func ]]( "DLC3_ZOMBIE_ALL_DOORS" );
+				}
+				bbPrint( "zombie_uses: playername %s playerscore %d round %d cost %d name %s x %f y %f z %f type debris", who.playername, who.score, level.round_number, self.zombie_cost, self.target, self.origin );
+				
 				// delete the stuff
 				junk = getentarray( self.target, "targetname" ); 
 	
@@ -426,6 +482,7 @@ debris_think()
 			else
 			{
 				play_sound_at_pos( "no_purchase", self.origin );
+				// who thread maps\nazi_zombie_sumpf_blockers::play_no_money_purchase_dialog();
 			}
 		}
 	}
@@ -513,11 +570,13 @@ blocker_init()
 
 		targets[j].destroyed = false;
 		targets[j].claimed = false;
+		targets[j].og_origin = targets[j].origin;
 		self.barrier_chunks[self.barrier_chunks.size] = targets[j];
 
 		self blocker_attack_spots();
 	}
 
+	assert( IsDefined( self.clip ) );
 	self.trigger_location = getstruct( self.target, "targetname" ); 
 
 	self thread blocker_think(); 
@@ -596,7 +655,7 @@ blocker_trigger_think()
 
 	trigger_pos = groundpos( trigger_location.origin ) + ( 0, 0, 4 );
 	trigger = Spawn( "trigger_radius", trigger_pos, 0, radius, height ); 
-
+	trigger thread trigger_delete_on_repair();
 	/#
 		if( GetDvarInt( "zombie_debug" ) > 0 )
 		{
@@ -624,17 +683,23 @@ blocker_trigger_think()
 	while( 1 )
 	{
 		trigger waittill( "trigger", player ); 
-		if(player hasperk("specialty_fastreload"))
-		{	
-			level.sleightperk = true;
+
+		if( player hasperk( "specialty_fastreload" ) )
+		{
+			has_perk = true;
 		}
 		else
 		{
-			level.sleightperk = false;
-
+			has_perk = false;
 		}
-		wait( 0.4 );
+		
+		if( all_chunks_intact( self.barrier_chunks ) )
+		{
+			trigger notify("all_boards_repaired");
+			return;
+		}
 
+	
 		while( 1 )
 		{
 			if( !player IsTouching( trigger ) )
@@ -652,14 +717,6 @@ blocker_trigger_think()
 				break;
 			}
 
-			//DT# 37553
-			//COST NOTHING NOW, will GIVE you money, so this
-			//check is totally invalid	
-			//if( ( player.score - cost ) < 0 )
-			//{
-			//	play_sound_at_pos( "no_purchase", trigger.origin );
-			//	break; 
-			//}
 	
 			if( !player UseButtonPressed() )
 			{
@@ -686,16 +743,14 @@ blocker_trigger_think()
 			player.rebuild_barrier_reward += cost;
 			if( player.rebuild_barrier_reward < level.zombie_vars["rebuild_barrier_cap_per_round"] )
 			{
-				chunk play_sound_on_ent( "rebuild_barrier_piece" );
+			chunk play_sound_on_ent( "rebuild_barrier_piece" );
 			}
 	
-			self thread replace_chunk( chunk ); 
+			self thread replace_chunk( chunk, has_perk );
 	
-			if( IsDefined( self.clip ) )
-			{
-				self.clip enable_trigger(); 
-				self.clip DisconnectPaths(); 
-			}
+			assert( IsDefined( self.clip ) );
+			self.clip enable_trigger(); 
+			self.clip DisconnectPaths(); 
 	
 			if( !self script_delay() )
 			{
@@ -712,15 +767,34 @@ blocker_trigger_think()
 			if( player.rebuild_barrier_reward < level.zombie_vars["rebuild_barrier_cap_per_round"] )
 			{
 				player maps\_zombiemode_score::add_to_player_score( cost );
+				
 			}
-	
+			// general contractor achievement for dlc 2. keep track of how many board player repaired.
+			if(IsDefined(player.board_repair))
+			{
+				player.board_repair += 1;
+			}
+
 			if( all_chunks_intact( self.barrier_chunks ) )
 			{
-				trigger Delete(); 
-				return; 
+				trigger notify("all_boards_repaired");
+				return;
 			}
+			
 		}
 	}
+}
+
+trigger_delete_on_repair()
+{
+	while( IsDefined( self ) )
+	{
+		self waittill("all_boards_repaired");
+		self delete();
+		break;
+		
+	}
+
 }
 
 blocker_doubler_hint( hint, original_cost )
@@ -757,11 +831,11 @@ remove_chunk( chunk, node, destroy_immediately )
 	
 	chunk NotSolid();
 
-	if ( isdefined( destroy_immediately ) && destroy_immediately)
-	{
-		chunk.destroyed = true;
-	}
-	
+	//if ( isdefined( destroy_immediately ) && destroy_immediately)
+	//{
+	//	chunk.destroyed = true;
+	//}
+	//
 	fx = "wood_chunk_destory";
 	if( IsDefined( self.script_fxid ) )
 	{
@@ -769,8 +843,8 @@ remove_chunk( chunk, node, destroy_immediately )
 	}
 
 	playfx( level._effect[fx], chunk.origin ); 
-	playfx( level._effect[fx], chunk.origin + ( randomint( 20 ), randomint( 20 ), randomint( 10 ) ) ); 
-	playfx( level._effect[fx], chunk.origin + ( randomint( 40 ), randomint( 40 ), randomint( 20 ) ) ); 
+	//playfx( level._effect[fx], chunk.origin + ( randomint( 20 ), randomint( 20 ), randomint( 10 ) ) ); 
+	//playfx( level._effect[fx], chunk.origin + ( randomint( 40 ), randomint( 40 ), randomint( 20 ) ) ); 
 
 	if( IsDefined( chunk.script_moveoverride ) && chunk.script_moveoverride )
 	{
@@ -778,11 +852,6 @@ remove_chunk( chunk, node, destroy_immediately )
 	}
 	else
 	{
-		if( !IsDefined( chunk.og_origin ) )
-		{
-			chunk.og_origin = chunk.origin; 
-		}
-
 //		angles = node.angles +( 0, 180, 0 );
 //		force = AnglesToForward( angles + ( -60, 0, 0 ) ) * ( 200 + RandomInt( 100 ) ); 
 //		chunk PhysicsLaunch( chunk.origin, force );
@@ -826,12 +895,15 @@ remove_chunk( chunk, node, destroy_immediately )
 		ent Delete(); 
 	}
 
-	if (isdefined( destroy_immediately ) && destroy_immediately)
-	{
-		return;
-	}
+	//if (isdefined( destroy_immediately ) && destroy_immediately)
+	//{
+	//	return;
+	//}
 
 	chunk.destroyed = true;
+	chunk.target_by_zombie = undefined;
+	chunk.mid_repair = undefined;
+	chunk notify( "destroyed" );
 
 	if( all_chunks_destroyed( node.barrier_chunks ) )
 	{
@@ -857,54 +929,70 @@ remove_chunk( chunk, node, destroy_immediately )
 	}
 }
 
-replace_chunk( chunk )
+replace_chunk( chunk, has_perk, via_powerup )
 {
-	if( IsDefined( chunk.og_origin ) )
+	if(! IsDefined( has_perk ) )
 	{
-
-		if(level.sleightperk == true)
-		{	
-			time = 0.05;
-		//	iprintlnbold("faster build");
-		}
-		else
-		{		
-			time = 0.1 + RandomFloat( 0.2 ); 
-		}
-
-		chunk Show();
-
-		sound = "rebuild_barrier_hover";
-		if( IsDefined( chunk.script_presound ) )
-		{
-			sound = chunk.script_presound;
-		}
-
-		play_sound_at_pos( sound, chunk.origin );
-
-		only_z = ( chunk.origin[0], chunk.origin[1], chunk.og_origin[2] ); 
-		chunk MoveTo( only_z, time, 0, time * 0.25 ); 
-		chunk RotateTo( ( 0, 0, 0 ), time + 0.25 ); 
-		chunk waittill( "rotatedone" ); 
-		
-		if(level.sleightperk == true)
-		{	
-			//wait(0.1);
-			
-		}
-		else
-		{		
-			wait( 0.2 ); 
-		}
-
-		
-	
-
-		chunk MoveTo( chunk.og_origin, 0.15, 0.1 ); 
-		chunk waittill( "movedone" ); 
+		has_perk = false;
 	}
 
+	assert( IsDefined( chunk.og_origin ) );
+	
+	assert( !IsDefined( chunk.mid_repair ) );
+	chunk.mid_repair = true;
+	
+	chunk Show();
+
+	sound = "rebuild_barrier_hover";
+	if( IsDefined( chunk.script_presound ) )
+	{
+		sound = chunk.script_presound;
+	}
+
+
+	if( !isdefined( via_powerup  ) )
+	{
+		play_sound_at_pos( sound, chunk.origin );
+	}
+
+
+	only_z = ( chunk.origin[0], chunk.origin[1], chunk.og_origin[2] ); 
+
+
+	if( has_perk == true )
+	{
+
+		chunk RotateTo( ( 0, 0, 0 ),  0.15 ); 
+		chunk waittill_notify_or_timeout( "rotatedone", 1 ); 
+		wait( 0.1 ); 
+	}
+	else
+	{
+
+		chunk MoveTo( only_z, 0.15); 
+		chunk RotateTo( ( 0, 0, 0 ),  0.3 ); 
+		chunk waittill_notify_or_timeout( "rotatedone", 1 ); 
+		wait( 0.2 ); 
+	}
+
+
+	if( has_perk == true )
+	{
+		chunk MoveTo( chunk.og_origin, 0.05 ); 
+	}
+	else
+	{
+		chunk MoveTo( chunk.og_origin, 0.1 ); 
+	}
+	
+	chunk waittill_notify_or_timeout( "movedone", 1 ); 
+	assert( chunk.origin == chunk.og_origin );
+
+	chunk.target_by_zombie = undefined;
 	chunk.destroyed = false; 
+	
+	assert( chunk.mid_repair == true );
+	chunk.mid_repair = undefined;
 
 	sound = "barrier_rebuild_slam";
 	Earthquake( RandomFloatRange( 0.1, 0.15 ), 0.3, chunk.origin, 200 );
@@ -913,7 +1001,7 @@ replace_chunk( chunk )
 		sound = self.script_ender;
 	}
 	
-	play_sound_at_pos( sound, chunk.origin );
+	
 
 	chunk Solid(); 
 
@@ -922,15 +1010,20 @@ replace_chunk( chunk )
 	{
 		fx = self.script_fxid;
 	}
-
-	playfx( level._effect[fx], chunk.origin ); 
-	playfx( level._effect[fx], chunk.origin +( randomint( 20 ), randomint( 20 ), randomint( 10 ) ) ); 
-	playfx( level._effect[fx], chunk.origin +( randomint( 40 ), randomint( 40 ), randomint( 20 ) ) ); 
+	
+	if( !IsDefined( via_powerup ) )
+	{
+		play_sound_at_pos( sound, chunk.origin );
+		playfx( level._effect[fx], chunk.origin ); 
+		//playfx( level._effect[fx], chunk.origin +( randomint( 20 ), randomint( 20 ), randomint( 10 ) ) ); 
+		//playfx( level._effect[fx], chunk.origin +( randomint( 40 ), randomint( 40 ), randomint( 20 ) ) ); 
+	}
 
 	if( !Isdefined( self.clip ) )
 	{
 		chunk Disconnectpaths(); 
 	}
+	
 }
 
 add_new_zombie_spawners()
@@ -1004,3 +1097,5 @@ flag_blocker()
 
 	AssertMsg( "flag blocker at " + self.origin + ", the type \"" + type + "\" is not recognized" );
 }
+
+

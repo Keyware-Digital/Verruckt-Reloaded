@@ -19,7 +19,7 @@ init()
 	set_zombie_var( "zombie_powerup_point_doubler_on", 	false );
 	set_zombie_var( "zombie_powerup_point_doubler_time", 30 );	// length of point doubler
 	set_zombie_var( "zombie_powerup_insta_kill_time", 	30 );	// length of insta kill
-	set_zombie_var( "zombie_powerup_drop_increment", 	400 );	// lower this to make drop happen more often
+	set_zombie_var( "zombie_powerup_drop_increment", 	2000 );	// lower this to make drop happen more often
 	set_zombie_var( "zombie_powerup_drop_max_per_round", 4 );	// lower this to make drop happen more often
 
 	// powerups
@@ -594,7 +594,7 @@ start_carpenter( origin )
 			if( !IsDefined( chunk ) )
 				break;
 
-			windows thread maps\_zombiemode_blockers_new::replace_chunk( chunk, false, true );
+			windows thread maps\_zombiemode_blockers::replace_chunk( chunk, false, true );
 			windows.clip enable_trigger(); 
 			windows.clip DisconnectPaths();
 			wait_network_frame();

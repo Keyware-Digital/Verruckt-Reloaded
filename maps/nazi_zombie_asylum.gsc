@@ -11,12 +11,13 @@ main()
 {
 	// enable for dog rounds
 	level.dogs_enabled = true;
-	
+
+	maps\_character_randomise::init();
 	maps\_destructible_opel_blitz::init();
 	precacheshellshock("electrocution");
 	
 	//add_zombie_hint( "default_buy_door_2500", &"ZOMBIE_BUTTON_BUY_OPEN_DOOR_2500" );
-	maps\_zombiemode_weapons::add_zombie_weapon( "mine_bouncing_betty",&"ZOMBIE_WEAPON_SATCHEL_2000", 2000 );
+	//maps\_zombiemode_weapons::add_zombie_weapon( "mine_bouncing_betty",&"ZOMBIE_WEAPON_SATCHEL_2000", 2000 );
 	
 	precachemodel("tag_origin");
 	precachemodel("zombie_zapper_power_box");

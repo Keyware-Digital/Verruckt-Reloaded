@@ -175,8 +175,8 @@ init_weapons()
 	add_zombie_weapon( "mortar_round", 						&"ZOMBIE_WEAPON_MORTARROUND_2000", 			2000,	"" );
 	add_zombie_weapon( "satchel_charge", 					&"ZOMBIE_WEAPON_SATCHEL_2000", 				2000,	"" );
 	add_zombie_weapon( "ray_gun", 							&"ZOMBIE_WEAPON_RAYGUN_10000", 				10000,	"vox_raygun", 5 );
-	
-	add_zombie_weapon( "mine_bouncing_betty",			&"ZOMBIE_WEAPON_SATCHEL_2000",					2000,	"", 0 );
+
+	//add_zombie_weapon( "mine_bouncing_betty",&"ZOMBIE_WEAPON_SATCHEL_2000", 2000 );
 
   	// add_zombie_weapon( "zombie_cymbal_monkey",					&"ZOMBIE_WEAPON_SATCHEL_2000", 				2000,	"vox_monkey",	3 );
 
@@ -1366,17 +1366,17 @@ play_weapon_vo(weapon)
 
 get_player_index(player)
 {
-	players = get_players();
-	for(i=0; i<players.size; i++)
+	assert( IsPlayer( player ) );
+	assert( IsDefined( player.entity_num ) );
+/#
+	// used for testing to switch player's VO in-game from devgui
+	if( player.entity_num == 0 && GetDVar( "zombie_player_vo_overwrite" ) != "" )
 	{
-		if (players[i] == player)
-		{
-			return i;
-		}
-
+		new_vo_index = GetDVarInt( "zombie_player_vo_overwrite" );
+		return new_vo_index;
 	}
-
-	return 1;
+#/
+	return level.random_character_index[player.entity_num];
 }
 
 ammo_give( weapon )

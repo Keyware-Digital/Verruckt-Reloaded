@@ -175,8 +175,7 @@ init_weapons()
 	add_zombie_weapon( "mortar_round", 						&"ZOMBIE_WEAPON_MORTARROUND_2000", 			2000,	"" );
 	add_zombie_weapon( "satchel_charge", 					&"ZOMBIE_WEAPON_SATCHEL_2000", 				2000,	"" );
 	add_zombie_weapon( "ray_gun", 							&"ZOMBIE_WEAPON_RAYGUN_10000", 				10000,	"vox_raygun", 5 );
-	
-	add_zombie_weapon( "mine_bouncing_betty",			&"ZOMBIE_WEAPON_SATCHEL_2000",					2000,	"", 0 );
+	//add_zombie_weapon( "mine_bouncing_betty",				&"ZOMBIE_WEAPON_SATCHEL_2000",				2000,	"", 0 );
 
   	// add_zombie_weapon( "zombie_cymbal_monkey",					&"ZOMBIE_WEAPON_SATCHEL_2000", 				2000,	"vox_monkey",	3 );
 

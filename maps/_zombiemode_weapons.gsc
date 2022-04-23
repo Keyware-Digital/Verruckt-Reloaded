@@ -48,6 +48,7 @@ add_zombie_weapon( weapon_name, hint, cost, weaponVO, variation_count, ammo_cost
 	struct.cost = cost;
 	struct.sound = weaponVO;
 	struct.variation_count = variation_count;
+	struct.is_in_box = level.zombie_include_weapons[weapon_name];
 
 	if( !IsDefined( ammo_cost ) )
 	{
@@ -59,14 +60,59 @@ add_zombie_weapon( weapon_name, hint, cost, weaponVO, variation_count, ammo_cost
 	level.zombie_weapons[weapon_name] = struct;
 }
 
-include_zombie_weapon( weapon_name )
+default_weighting_func()
+{
+	return 1;
+}
+
+default_ray_gun_weighting_func()
+{
+	if( level.box_moved == true )
+	{	
+		num_to_add = 1;
+		// increase the percentage of ray gun
+		if( isDefined( level.pulls_since_last_ray_gun ) )
+		{
+			// after 12 pulls the ray gun percentage increases to 15%
+			if( level.pulls_since_last_ray_gun > 11 )
+			{
+				num_to_add += int(level.zombie_include_weapons.size*0.15);			
+			}			
+			// after 8 pulls the Ray Gun percentage increases to 10%
+			else if( level.pulls_since_last_ray_gun > 7 )
+			{
+				num_to_add += int(.1 * level.zombie_include_weapons.size);
+			}		
+		}
+		return num_to_add;	
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+include_zombie_weapon( weapon_name, in_box, weighting_func )
 {
 	if( !IsDefined( level.zombie_include_weapons ) )
 	{
 		level.zombie_include_weapons = [];
 	}
+	if( !isDefined( in_box ) )
+	{
+		in_box = true;
+	}
 
-	level.zombie_include_weapons[weapon_name] = true;
+	level.zombie_include_weapons[weapon_name] = in_box;
+	
+	if( !isDefined( weighting_func ) )
+	{
+		level.weapon_weighting_funcs[weapon_name] = maps\_zombiemode_weapons::default_weighting_func;
+	}
+	else
+	{
+		level.weapon_weighting_funcs[weapon_name] = weighting_func;
+	}
 }
 
 init_weapons()
@@ -246,6 +292,12 @@ get_ammo_cost( weapon_name )
 	return level.zombie_weapons[weapon_name].ammo_cost;
 }
 
+get_is_in_box( weapon_name )
+{
+	AssertEx( IsDefined( level.zombie_weapons[weapon_name] ), weapon_name + " was not included or is not part of the zombie weapon list." );
+	
+	return level.zombie_weapons[weapon_name].is_in_box;
+}
 
 
 // for the random weapon chest
@@ -745,26 +797,111 @@ treasure_chest_lid_close( timedOut )
 
 treasure_chest_ChooseRandomWeapon( player )
 {
+
 	keys = GetArrayKeys( level.zombie_weapons );
 
 	// Filter out any weapons the player already has
 	filtered = [];
 	for( i = 0; i < keys.size; i++ )
 	{
+		if( !get_is_in_box( keys[i] ) )
+		{
+			continue;
+		}
+		
 		if( player HasWeapon( keys[i] ) )
 		{
 			continue;
 		}
 
-		//chrisP - make sure the chest doesn't give the player a bouncing betty
 		if(keys[i] == "mine_bouncing_betty")
+		{
+			continue;
+		}
+
+		if( !IsDefined( keys[i] ) )
 		{
 			continue;
 		}
 
 		filtered[filtered.size] = keys[i];
 	}
+	
+	// Filter out the limited weapons
+	if( IsDefined( level.limited_weapons ) )
+	{
+		keys2 = GetArrayKeys( level.limited_weapons );
+		players = get_players();
+		for( q = 0; q < keys2.size; q++ )
+		{
+			count = 0;
+			for( i = 0; i < players.size; i++ )
+			{
+				if( players[i] HasWeapon( keys2[q] ) )
+				{
+					count++;
+				}
 
+				// check for last stand weapons that might not be on the player at the time
+				if (players[i] maps\_laststand::player_is_in_laststand())
+				{
+					for( m = 0; m < players[i].weaponInventory.size; m++ )
+					{
+						if (players[i].weaponInventory[m] == keys2[q])
+						{
+							count++;
+						}
+					}
+				}
+			}
+
+			if( count == level.limited_weapons[keys2[q]] )
+			{
+				filtered = array_remove( filtered, keys2[q] );
+			}
+		}
+	}
+
+	return filtered[RandomInt( filtered.size )];
+}
+
+treasure_chest_ChooseWeightedRandomWeapon( player )
+{
+
+	keys = GetArrayKeys( level.zombie_weapons );
+
+	// Filter out any weapons the player already has
+	filtered = [];
+	for( i = 0; i < keys.size; i++ )
+	{
+		if( !get_is_in_box( keys[i] ) )
+		{
+			continue;
+		}
+		
+		if( player HasWeapon( keys[i] ) )
+		{
+			continue;
+		}
+
+		if(keys[i] == "mine_bouncing_betty")
+		{
+			continue;
+		}
+
+		if( !IsDefined( keys[i] ) )
+		{
+			continue;
+		}
+
+		num_entries = [[ level.weapon_weighting_funcs[keys[i]] ]]();
+		
+		for( j = 0; j < num_entries; j++ )
+		{
+			filtered[filtered.size] = keys[i];
+		}
+	}
+	
 	// Filter out the limited weapons
 	if( IsDefined( level.limited_weapons ) )
 	{

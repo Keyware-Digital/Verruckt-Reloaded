@@ -12,7 +12,6 @@ main()
 	// enable for dog rounds
 	level.dogs_enabled = true;
 
-	maps\_character_randomise::init();
 	maps\_destructible_opel_blitz::init();
 	precacheshellshock("electrocution");
 	
@@ -44,6 +43,7 @@ main()
 	precachestring(&"ZOMBIE_INTRO_ASYLUM_LEVEL_SEPTEMBER");
 
 	include_weapons();
+	maps\_character_randomise::init();
 	include_powerups();		
 	maps\nazi_zombie_asylum_fx::main();	
 	
@@ -51,8 +51,6 @@ main()
 	{
 		return;
 	}
-		//init the perk machines
-	maps\_zombiemode_perks::init();
 	maps\_zombiemode::main();		
 	level.burning_zombies = [];
 	level.electrocuted_zombies = [];

@@ -48,8 +48,7 @@ add_zombie_weapon( weapon_name, hint, cost, weaponVO, variation_count, ammo_cost
 	struct.cost = cost;
 	struct.sound = weaponVO;
 	struct.variation_count = variation_count;
-	struct.is_in_box = level.zombie_include_weapons[weapon_name];
-	
+
 	if( !IsDefined( ammo_cost ) )
 	{
 		ammo_cost = round_up_to_ten( int( cost * 0.5 ) );
@@ -60,19 +59,14 @@ add_zombie_weapon( weapon_name, hint, cost, weaponVO, variation_count, ammo_cost
 	level.zombie_weapons[weapon_name] = struct;
 }
 
-include_zombie_weapon( weapon_name, in_box )
+include_zombie_weapon( weapon_name )
 {
 	if( !IsDefined( level.zombie_include_weapons ) )
 	{
 		level.zombie_include_weapons = [];
 	}
 
-	if( !isDefined( in_box ) )
-	{
-		in_box = true;
-	}
-	
-	level.zombie_include_weapons[weapon_name] = in_box;
+	level.zombie_include_weapons[weapon_name] = true;
 }
 
 init_weapons()
@@ -96,11 +90,11 @@ init_weapons()
 	add_zombie_weapon( "zombie_colt", 							&"ZOMBIE_WEAPON_ZOMBIECOLT_25", 			25, 	"vox_crappy", 4 );
 
 	// Bolt Action                                      		
-	add_zombie_weapon( "kar98k", 								&"ZOMBIE_WEAPON_KAR98K_200", 				200,	"vox_crappy", 0);
+	add_zombie_weapon( "kar98k", 								&"ZOMBIE_WEAPON_KAR98K_200", 				200,	"vox_crappy", 4);
 	add_zombie_weapon( "kar98k_bayonet", 						&"ZOMBIE_WEAPON_KAR98K_B_200", 				200,	"", 0);
 	add_zombie_weapon( "mosin_rifle", 							&"ZOMBIE_WEAPON_MOSIN_200", 				200,	"", 0); 
 	add_zombie_weapon( "mosin_rifle_bayonet", 					&"ZOMBIE_WEAPON_MOSIN_B_200", 				200,	"", 0 );
-	add_zombie_weapon( "springfield", 							&"ZOMBIE_WEAPON_SPRINGFIELD_200", 			200,	"vox_crappy", 0 );
+	add_zombie_weapon( "springfield", 							&"ZOMBIE_WEAPON_SPRINGFIELD_200", 			200,	"vox_crappy", 4 );
 	add_zombie_weapon( "springfield_bayonet", 					&"ZOMBIE_WEAPON_SPRINGFIELD_B_200", 		200,	"", 0 );
 	add_zombie_weapon( "type99_rifle", 							&"ZOMBIE_WEAPON_TYPE99_200", 				200,	"", 0 );
 	add_zombie_weapon( "type99_rifle_bayonet", 					&"ZOMBIE_WEAPON_TYPE99_B_200", 				200,	"", 0 );
@@ -109,7 +103,7 @@ init_weapons()
 	add_zombie_weapon( "gewehr43", 								&"ZOMBIE_WEAPON_GEWEHR43_600", 				600,	"" , 0 );
 	add_zombie_weapon( "m1carbine", 							&"ZOMBIE_WEAPON_M1CARBINE_600",				600,	"" , 0 );
 	add_zombie_weapon( "m1carbine_bayonet", 					&"ZOMBIE_WEAPON_M1CARBINE_B_600", 			600,	"" , 0 );
-	add_zombie_weapon( "m1garand", 								&"ZOMBIE_WEAPON_M1GARAND_600", 				600,	"vox_crappy" , 0 );
+	add_zombie_weapon( "m1garand", 								&"ZOMBIE_WEAPON_M1GARAND_600", 				600,	"vox_crappy" , 4 );
 	add_zombie_weapon( "m1garand_bayonet", 						&"ZOMBIE_WEAPON_M1GARAND_B_600", 			600,	"" , 0 );
 	add_zombie_weapon( "svt40", 								&"ZOMBIE_WEAPON_SVT40_600", 				600,	"" , 0 );
 
@@ -175,10 +169,6 @@ init_weapons()
 	add_zombie_weapon( "mortar_round", 						&"ZOMBIE_WEAPON_MORTARROUND_2000", 			2000,	"" );
 	add_zombie_weapon( "satchel_charge", 					&"ZOMBIE_WEAPON_SATCHEL_2000", 				2000,	"" );
 	add_zombie_weapon( "ray_gun", 							&"ZOMBIE_WEAPON_RAYGUN_10000", 				10000,	"vox_raygun", 5 );
-
-	//add_zombie_weapon( "mine_bouncing_betty",&"ZOMBIE_WEAPON_SATCHEL_2000", 2000 );
-
-  	// add_zombie_weapon( "zombie_cymbal_monkey",					&"ZOMBIE_WEAPON_SATCHEL_2000", 				2000,	"vox_monkey",	3 );
 
 	if(level.script != "nazi_zombie_prototype")
 	{
@@ -256,12 +246,7 @@ get_ammo_cost( weapon_name )
 	return level.zombie_weapons[weapon_name].ammo_cost;
 }
 
-get_is_in_box( weapon_name )
-{
-	AssertEx( IsDefined( level.zombie_weapons[weapon_name] ), weapon_name + " was not included or is not part of the zombie weapon list." );
-	
-	return level.zombie_weapons[weapon_name].is_in_box;
-}
+
 
 // for the random weapon chest
 treasure_chest_init()
@@ -512,7 +497,7 @@ treasure_chest_move_vo()
 
 	self endon("disconnect");
 
-	index = maps\_zombiemode_weapons::get_player_index(self);
+	index = maps\_zombiemode_weapons::get_player_index( self );
 	sound = undefined;
 
 	if(!isdefined (level.player_is_speaking))
@@ -767,10 +752,6 @@ treasure_chest_ChooseRandomWeapon( player )
 	for( i = 0; i < keys.size; i++ )
 	{
 		if( player HasWeapon( keys[i] ) )
-		{
-			continue;
-		}
-		if( !get_is_in_box( keys[i] ) )
 		{
 			continue;
 		}
@@ -1351,7 +1332,7 @@ weapon_give( weapon )
 }
 play_weapon_vo(weapon)
 {
-	index = get_player_index(self);
+	index = get_player_index( self );
 	if(!IsDefined (level.zombie_weapons[weapon].sound))
 	{
 		return;

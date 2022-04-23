@@ -4,11 +4,11 @@
 
 init()
 {
-	randomise_character_index();
+	randomize_character_index();
 	get_player_score_colors();
 }
 
-randomise_character_index()
+randomize_character_index()
 {
 	level.random_character_index = [];
 	for( i = 0; i < 4; i++ )

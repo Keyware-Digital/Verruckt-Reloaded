@@ -632,7 +632,7 @@ include_weapons()
 	include_weapon( "sw_357" );
 	
 	// Semi Auto
-	include_weapon( "m1garand", false );
+	include_weapon( "m1garand" );
 	include_weapon( "m1carbine" );
 	include_weapon( "gewehr43" );
 
@@ -643,8 +643,8 @@ include_weapons()
 	include_weapon( "ppsh" );
 
 	// Bolt Action
-	include_weapon( "kar98k", false );
-	include_weapon( "springfield", false );
+	include_weapon( "kar98k" );
+	include_weapon( "springfield" );
 
 	// Scoped
 	include_weapon( "ptrs41_zombie" );
@@ -674,7 +674,7 @@ include_weapons()
 	include_weapon( "30cal_bipod" );
 
 	// Heavy MG
-	include_weapon( "bar_bipod", false );
+	include_weapon( "bar_bipod" );
 	include_weapon( "bar" );
 
 	// Rocket Launcher
@@ -705,16 +705,15 @@ include_powerups()
 	include_powerup( "carpenter" );
 }
 
-include_weapon( weapon_name, in_box )
+include_weapon( weapon_name )
 {
-	maps\_zombiemode_weapons::include_zombie_weapon( weapon_name, in_box );
+	maps\_zombiemode_weapons::include_zombie_weapon( weapon_name );
 }
 
 include_powerup( powerup_name )
 {
 	maps\_zombiemode_powerups::include_zombie_powerup( powerup_name );
 }
-
 
 /*------------------------------------
 BOUNCING BETTY STUFFS - 

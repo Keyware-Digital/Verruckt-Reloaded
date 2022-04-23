@@ -705,8 +705,8 @@ give_model( class )
 		else if( level.script == "zombiemode" || level.script == "nazi_zombie_sumpf" || level.script == "nazi_zombie_asylum" || level.script == "nazi_zombie_factory" || level.script == "zombie_test_map" ) 
 		{
 
-			switch( maps\_zombiemode_weapons::get_player_index( self ) )
-			{
+		switch( maps\_zombiemode_weapons::get_player_index( self ) )
+		{
 			case 0:
 				character\char_zomb_player_0::main();
 				break;
@@ -719,14 +719,13 @@ give_model( class )
 			case 3:
 				character\char_zomb_player_3::main();
 				break;
-			}
-
+		}
 			self give_player_specific_add_weapon();
 			self give_player_specific_switch_weapon();
 			self give_player_specific_laststand_pistol();
 			self give_player_specific_viewmodel();
 			self give_player_specific_interactive_hands();
-                 return;
+            return;
 		
 		}
 		else

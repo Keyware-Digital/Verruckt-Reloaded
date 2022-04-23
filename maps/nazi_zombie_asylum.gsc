@@ -613,7 +613,7 @@ init_sounds()
 // Also adds these weapons to the random treasure chest.
 include_weapons()
 {
-	//Verruckt Booster - Trebor
+	//Verruckt: Reloaded
 	include_weapon( "kar98k_bayonet" );
 	include_weapon( "mosin_rifle_bayonet" );
 	include_weapon( "dp28" );

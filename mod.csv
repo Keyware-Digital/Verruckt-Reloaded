@@ -12,7 +12,7 @@ rawfile,maps\_zombiemode_spawner.gsc
 rawfile,maps\_zombiemode_betty.gsc
 sound,mod_verruckt,,all_mp
 sound,mod_verruckt_powerups,,all_sp
-sound,menu_music,,all_sp
+sound,mod_verruckt_menu_music,,all_sp
 sound,music_mainmenu,main_menu
 sound,sfx,weapon,uber,uber_m_left
 sound,sfx,weapon,uber,uber_m_right

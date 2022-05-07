@@ -28,7 +28,6 @@ sound\sfx\weapon\uber\uber_m_left.wav
 sound\sfx\weapon\uber\uber_m_right.wav
 sound\sfx\weapon\uber\uber_shot_m.wav
 sound\sfx\weapon\uber\uber_shot_st.wav
-soundaliases\menu_music.csv
 soundaliases\mod_verruckt.csv
 soundaliases\mod_verruckt_powerups.csv
 ui\asylum_main.menu

@@ -85,7 +85,7 @@ main()
 	level thread magic_box_light();
 
 	//dev
-	//players[i] SetClientDvar("sv_cheats", 1); //enable cheats for testing purposes
+	players[i] SetClientDvar("sv_cheats", 1); //enable cheats for testing purposes
 	
 	// If you want to modify/add to the weapons table, please copy over the _zombiemode_weapons init_weapons() and paste it here.
 	// I recommend putting it in it's own function...

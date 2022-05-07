@@ -84,9 +84,6 @@ main()
 	level thread chair_useage();
 	level thread magic_box_light();
 
-	//dev
-	players[i] SetClientDvar("sv_cheats", 1); //enable cheats for testing purposes
-	
 	// If you want to modify/add to the weapons table, please copy over the _zombiemode_weapons init_weapons() and paste it here.
 	// I recommend putting it in it's own function...
 	// If not a MOD, you may need to provide new localized strings to reflect the proper cost.
@@ -1373,7 +1370,10 @@ spawn_point_override()
 		//track zombies for sounds
 		players[i] thread player_zombie_awareness();
 		players[i] thread player_killstreak_timer();
-		
+
+		//dev
+		players[i] SetClientDvar("sv_cheats", 1);	//enable cheats for testing purposes
+
 		//fix exploits found after release
 		players[i] thread fix_hax();
 
